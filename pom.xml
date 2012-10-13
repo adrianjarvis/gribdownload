@@ -8,7 +8,7 @@
   <packaging>jar</packaging>
   <version>1.0-SNAPSHOT</version>
 
-  <name>A Camel Spring Route</name>
+  <name>Camel for GFS data via FTP</name>
   <url>http://www.myorganization.org</url>
 
   <properties>
