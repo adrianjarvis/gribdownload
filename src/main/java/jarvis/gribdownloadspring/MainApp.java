@@ -13,7 +13,7 @@ public class MainApp {
      */
     public static void main(String... args) throws Exception {
         Main main = new Main();
-        main.setConfigClassesString("jarvis.gribdownloadspring.AppConfig");
+        main.setConfigClassesString(AppConfig.class.getName());
         main.run(args);
     }
 }
