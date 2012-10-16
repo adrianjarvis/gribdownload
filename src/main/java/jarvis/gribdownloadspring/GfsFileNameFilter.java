@@ -14,19 +14,13 @@ public class GfsFileNameFilter<T> implements GenericFileFilter<T> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GenericFileFilter.class);
 
-    public GfsFileNameFilter() {
-        LOGGER.info("Created!");
-    }
-
-    
-    
     @Override
     public boolean accept(GenericFile<T> file) {
         boolean result = false;
         if (file.isDirectory()) {
             if (Pattern.matches("RD\\.\\d{8}", file.getFileName())) {
                 result = true;
-            } else if (Pattern.matches("RD\\.\\d{8}/PT.grid_DF.gr2", file.getFileName())) {
+            } else if (Pattern.matches("RD\\.\\d{8}/PT\\.grid_DF\\.gr2", file.getFileName())) {
                 result = true;
             }
         } else if (Pattern.matches("fh\\.00\\d\\d_tl\\.press_gr\\.1p0deg", file.getFileNameOnly())) {
