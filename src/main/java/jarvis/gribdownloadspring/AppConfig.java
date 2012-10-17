@@ -11,6 +11,11 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 public class AppConfig extends SingleRouteCamelConfiguration {
+   
+    @Bean
+    public GribProcessorBean gribProcessing() {
+        return new GribProcessorBean();
+    }
     
     @Bean
     public GfsFileNameFilter gfsfilter() {

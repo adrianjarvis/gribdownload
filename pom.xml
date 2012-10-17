@@ -67,6 +67,11 @@
       <artifactId>camel-spring</artifactId>
       <version>2.10.1</version>
     </dependency>
+<!--    <dependency>
+      <groupId>edu.ucar</groupId>
+      <artifactId>netcdf</artifactId>
+      <version>4.2.20</version>
+    </dependency>-->
   </dependencies>
 
   <build>
