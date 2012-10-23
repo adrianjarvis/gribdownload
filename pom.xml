@@ -72,6 +72,11 @@
       <artifactId>netcdf</artifactId>
       <version>4.2.20</version>
     </dependency>-->
+    <dependency>
+      <groupId>edu.ucar</groupId>
+      <artifactId>grib</artifactId>
+      <version>8.0.29</version>
+    </dependency>
   </dependencies>
 
   <build>
