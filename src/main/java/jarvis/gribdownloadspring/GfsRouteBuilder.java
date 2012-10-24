@@ -23,6 +23,7 @@ package jarvis.gribdownloadspring;
  */
 
 
+import java.io.File;
 import org.apache.camel.spring.SpringRouteBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +36,7 @@ public class GfsRouteBuilder  extends SpringRouteBuilder {
     public void configure() throws Exception {
         from("ftp://tgftp.nws.noaa.gov/SL.us008001/ST.opnl/MT.gfs_CY.00/?recursive=true&filter=#gfsfilter")
                 .to("file://target/temp_grib?recursive=true");
-        from("file://target/temp_grib?recursive=true").to("bean:gribProcessing").to("file://target/done");
+        from("file://target/temp_grib?recursive=true").split().method("gribSplitter").to("file://target/done");
     }
     
 }

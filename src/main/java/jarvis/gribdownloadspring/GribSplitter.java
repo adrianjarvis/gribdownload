@@ -70,6 +70,7 @@ public class GribSplitter {
                 randomAccessFile.close();
             }
         }
+        LOGGER.info("Split file {} into {} records", file.getName(), result.size());
         return result;
     }
 

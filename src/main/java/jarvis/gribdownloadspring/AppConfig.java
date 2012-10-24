@@ -23,6 +23,7 @@ package jarvis.gribdownloadspring;
  */
 
 
+import java.io.File;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.spring.javaconfig.SingleRouteCamelConfiguration;
 import org.springframework.context.annotation.Bean;
@@ -43,6 +44,13 @@ public class AppConfig extends SingleRouteCamelConfiguration {
     @Bean
     public GfsFileNameFilter gfsfilter() {
         return new GfsFileNameFilter();
+    }
+    
+    @Bean
+    public GribSplitter gribSplitter() {
+        final File splitterOutputDir = new File("target/split");
+        splitterOutputDir.mkdir();
+        return new GribSplitter(splitterOutputDir);
     }
     
     @Override
