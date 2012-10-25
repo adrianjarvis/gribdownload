@@ -6,6 +6,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.camel.EndpointInject;
+import org.apache.camel.Message;
+import org.apache.camel.ProducerTemplate;
+import org.apache.camel.component.file.GenericFile;
+import org.apache.commons.net.ftp.FTPFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ucar.grib.grib2.*;
@@ -36,13 +41,24 @@ public class GribSplitter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GribSplitter.class);
     private File outputDirectory;
-
+    @EndpointInject(uri="direct:split")
+    ProducerTemplate producerTemplate;
+    
     public GribSplitter(File outputDirectory) {
         this.outputDirectory = outputDirectory;
     }
     
-    public List<File> splitFile(File file) throws IOException {
-        List<File> result = new ArrayList<File>();
+    public void splitMessage(Message message) throws IOException {
+        GenericFile file = message.getBody(GenericFile.class);
+        Object fileObject = file.getFile();
+        if (fileObject instanceof File) {
+            splitFile((File) fileObject);
+        } else {
+            LOGGER.warn("Unable to handle file of type {}", fileObject.getClass());
+        }
+    }
+    
+    public void splitFile(File file) throws IOException {
         RandomAccessFile randomAccessFile = null;
         int fileCounter = 0;
         try {
@@ -62,7 +78,7 @@ public class GribSplitter {
                 String newFileName = file.getName() + "_" + fileCounter;
                 File newFile = new File(outputDirectory, newFileName);
                 writeNewFile(newFile, recordBytes);
-                result.add(newFile);
+                producerTemplate.sendBody(newFile);
                 randomAccessFile.seek(endPosition);
             }
         } finally {
@@ -70,8 +86,7 @@ public class GribSplitter {
                 randomAccessFile.close();
             }
         }
-        LOGGER.info("Split file {} into {} records", file.getName(), result.size());
-        return result;
+        LOGGER.info("Split file {} into {} records", file.getName(), fileCounter);
     }
 
     private void writeNewFile(File newFile, byte[] recordBytes) throws IOException {
