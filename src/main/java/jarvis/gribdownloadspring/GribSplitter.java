@@ -1,16 +1,15 @@
 package jarvis.gribdownloadspring;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.apache.camel.EndpointInject;
 import org.apache.camel.Message;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.component.file.GenericFile;
-import org.apache.commons.net.ftp.FTPFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ucar.grib.grib2.*;
@@ -20,7 +19,7 @@ import ucar.unidata.io.RandomAccessFile;
  * #%L
  * Camel for GFS data via FTP
  * %%
- * Copyright (C) 2012 Adrian Jarvis Software
+ * Copyright (C) 2012 Adrian Jarvis
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -47,7 +46,11 @@ public class GribSplitter {
     public GribSplitter(File outputDirectory) {
         this.outputDirectory = outputDirectory;
     }
-    
+
+    public void setProducerTemplate(ProducerTemplate producerTemplate) {
+        this.producerTemplate = producerTemplate;
+    }
+
     public void splitMessage(Message message) throws IOException {
         GenericFile file = message.getBody(GenericFile.class);
         Object fileObject = file.getFile();
@@ -68,18 +71,14 @@ public class GribSplitter {
             grib2Input.scan(false, false);
             List<Grib2Record> records = grib2Input.getRecords();
             for (Grib2Record record : records) {
-                Grib2IndicatorSection is = record.getIs();
-                long startPosition = is.getStartPos();
-                long endPosition = is.getEndPos();
-                randomAccessFile.seek(startPosition);
-                final long recordLength = endPosition - startPosition;
-                byte[] recordBytes = randomAccessFile.readBytes((int) recordLength);
-                fileCounter++;
+                byte[] recordBytes = readRecordAsBytes(record, randomAccessFile);
                 String newFileName = file.getName() + "_" + fileCounter;
                 File newFile = new File(outputDirectory, newFileName);
                 writeNewFile(newFile, recordBytes);
-                producerTemplate.sendBody(newFile);
-                randomAccessFile.seek(endPosition);
+                Map<String, Object> headers = createHeaders(record); 
+                headers.put("Original File Name", file.getName());
+                producerTemplate.sendBodyAndHeaders(newFile, headers);
+                fileCounter++;
             }
         } finally {
             if (randomAccessFile != null) {
@@ -89,6 +88,18 @@ public class GribSplitter {
         LOGGER.info("Split file {} into {} records", file.getName(), fileCounter);
     }
 
+    private byte[] readRecordAsBytes(Grib2Record record, RandomAccessFile randomAccessFile) throws IOException {
+        Grib2IndicatorSection is = record.getIs();
+        long startPosition = is.getStartPos();
+        long endPosition = is.getEndPos();
+        randomAccessFile.seek(startPosition);
+        final long recordLength = endPosition - startPosition;
+        byte[] recordBytes = randomAccessFile.readBytes((int) recordLength);
+        randomAccessFile.seek(endPosition);
+        return recordBytes;
+    }
+
+    
     private void writeNewFile(File newFile, byte[] recordBytes) throws IOException {
         FileOutputStream fileOutputStream = null;
         try {
@@ -100,5 +111,16 @@ public class GribSplitter {
             }
         }
         LOGGER.debug("Wrote {} bytes to file {}", recordBytes.length, newFile.getName());
+    }
+
+    private Map<String, Object> createHeaders(Grib2Record record) {
+        Map<String, Object> result = new HashMap<String, Object>();
+        Grib2ProductDefinitionSection pdS = record.getPDS();
+        Grib2Pds pdsVars = pdS.getPdsVars();
+        result.put("Forecast Date", pdsVars.getForecastDate());
+        result.put("Forecast Time", pdsVars.getForecastTime());
+        result.put("Parameter Category", pdsVars.getParameterCategory());
+        result.put("Parameter Number", pdsVars.getParameterNumber());
+        return result;
     }
 }

@@ -4,7 +4,7 @@ package jarvis.gribdownloadspring;
  * #%L
  * Camel for GFS data via FTP
  * %%
- * Copyright (C) 2012 Adrian Jarvis Software
+ * Copyright (C) 2012 Adrian Jarvis
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -23,7 +23,7 @@ package jarvis.gribdownloadspring;
  */
 
 
-import java.io.File;
+import org.apache.camel.Predicate;
 import org.apache.camel.spring.SpringRouteBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,10 +34,16 @@ public class GfsRouteBuilder  extends SpringRouteBuilder {
     
     @Override
     public void configure() throws Exception {
+        Predicate isWantedParameter = header("Parameter Number").in(0,1,2);
         from("ftp://tgftp.nws.noaa.gov/SL.us008001/ST.opnl/MT.gfs_CY.00/?recursive=true&filter=#gfsfilter")
             .to("file://target/temp_grib");
         from("file://target/temp_grib?recursive=true").to("bean:gribSplitter");
-        from("direct:split").to("file:target/done");
+        from("direct:split").log("${header[Parameter Number]}, ${header[Forecast Date]}")
+                .choice()
+                    .when(isWantedParameter).to("file:target/special_subset")
+                .otherwise()
+                    .to("file:target/the_rest").end();
+                
     }
     
 }

@@ -4,7 +4,7 @@ package jarvis.gribdownloadspring;
  * #%L
  * Camel for GFS data via FTP
  * %%
- * Copyright (C) 2012 Adrian Jarvis Software
+ * Copyright (C) 2012 Adrian Jarvis
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -73,7 +73,7 @@ public class GfsFileNameFilterTest {
     
     @Test
     public void testAcceptFile() {
-        GenericFileMock file = new GenericFileMock("RD.20121010/PT.grid_DF.gr2/fh.0066_tl.press_gr.1p0deg", false);
+        GenericFileMock file = new GenericFileMock("RD.20121010/PT.grid_DF.gr2/fh.0006_tl.press_gr.1p0deg", false);
         GfsFileNameFilter instance = new GfsFileNameFilter();
         boolean expResult = true;
         boolean result = instance.accept(file);

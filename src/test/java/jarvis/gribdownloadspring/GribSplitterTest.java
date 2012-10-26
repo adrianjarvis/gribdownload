@@ -27,9 +27,10 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.List;
+import java.util.Map;
+import org.apache.camel.ProducerTemplate;
 import org.junit.*;
-import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 public class GribSplitterTest {
     
@@ -41,7 +42,9 @@ public class GribSplitterTest {
         final URL resource = this.getClass().getResource("/fh.0192_tl.press_gr.2p5deg");
         File file = new File(resource.toURI());
         GribSplitter instance = new GribSplitter(new File("./target/"));
-//        List result = instance.splitFile(file);
-//        assertEquals(360, result.size());
+        ProducerTemplate producerMock = mock(ProducerTemplate.class);
+        instance.setProducerTemplate(producerMock);
+        instance.splitFile(file);
+        verify(producerMock, times(360)).sendBodyAndHeaders(any(File.class), any(Map.class));
     }
 }

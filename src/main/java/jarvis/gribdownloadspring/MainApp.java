@@ -4,7 +4,7 @@ package jarvis.gribdownloadspring;
  * #%L
  * Camel for GFS data via FTP
  * %%
- * Copyright (C) 2012 Adrian Jarvis Software
+ * Copyright (C) 2012 Adrian Jarvis
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
