@@ -77,6 +77,7 @@ public class GribSplitter {
                 writeNewFile(newFile, recordBytes);
                 Map<String, Object> headers = createHeaders(record); 
                 headers.put("Original File Name", file.getName());
+                headers.put("Record Number", fileCounter);
                 producerTemplate.sendBodyAndHeaders(newFile, headers);
                 fileCounter++;
             }
@@ -115,12 +116,13 @@ public class GribSplitter {
 
     private Map<String, Object> createHeaders(Grib2Record record) {
         Map<String, Object> result = new HashMap<String, Object>();
-        Grib2ProductDefinitionSection pdS = record.getPDS();
-        Grib2Pds pdsVars = pdS.getPdsVars();
-        result.put("Forecast Date", pdsVars.getForecastDate());
-        result.put("Forecast Time", pdsVars.getForecastTime());
-        result.put("Parameter Category", pdsVars.getParameterCategory());
-        result.put("Parameter Number", pdsVars.getParameterNumber());
+        Grib2RecordFacade recordFacade = new Grib2RecordFacade(record);
+        result.put("Forecast Date", recordFacade.getForecastDate());
+        result.put("Parameter Number", recordFacade.getParameterNumber());
+        result.put("Parameter", recordFacade.getParameterName());
+        result.put("Level1", recordFacade.getFirstLevelName());
+        result.put("Level2", recordFacade.getSecondLevelName());
         return result;
     }
+    
 }

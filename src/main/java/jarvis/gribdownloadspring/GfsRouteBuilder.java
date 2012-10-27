@@ -35,14 +35,14 @@ public class GfsRouteBuilder  extends SpringRouteBuilder {
     @Override
     public void configure() throws Exception {
         Predicate isWantedParameter = header("Parameter Number").in(0,1,2);
-        from("ftp://tgftp.nws.noaa.gov/SL.us008001/ST.opnl/MT.gfs_CY.00/?recursive=true&filter=#gfsfilter")
+        from("ftp://tgftp.nws.noaa.gov/SL.us008001/ST.opnl/MT.gfs_CY.12/?recursive=true&filter=#gfsfilter")
             .to("file://target/temp_grib");
         from("file://target/temp_grib?recursive=true").to("bean:gribSplitter");
-        from("direct:split").log("${header[Parameter Number]}, ${header[Forecast Date]}")
+        from("direct:split").log("${header[Parameter]}, ${header[Forecast Date]}, ${header[Level1]}-${header[Level2]}")
                 .choice()
-                    .when(isWantedParameter).to("file:target/special_subset")
+                    .when(isWantedParameter).to("file:target/special_subset?fileName=${header[Original File Name]}_${header[Record Number]}")
                 .otherwise()
-                    .to("file:target/the_rest").end();
+                    .to("file:target/the_rest?fileName=${header[Original File Name]}_${header[Record Number]}").end();
                 
     }
     
