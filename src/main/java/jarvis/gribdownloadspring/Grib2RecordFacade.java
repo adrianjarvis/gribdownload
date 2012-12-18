@@ -32,7 +32,6 @@ import ucar.grib.grib2.*;
  */
 public class Grib2RecordFacade {
 
-    private final Grib2Record record;
     @SuppressWarnings("deprecation")
     private final Grib2ProductDefinitionSection productDefinitionSection;
     private final Grib2IndicatorSection indicatorSection;
@@ -40,7 +39,6 @@ public class Grib2RecordFacade {
     
 
     public Grib2RecordFacade(Grib2Record record) {
-        this.record = record;
         productDefinitionSection = record.getPDS();
         indicatorSection = record.getIs();
         pdsVars = productDefinitionSection.getPdsVars();
