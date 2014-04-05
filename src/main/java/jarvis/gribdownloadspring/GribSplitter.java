@@ -7,9 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.camel.EndpointInject;
-import org.apache.camel.Message;
 import org.apache.camel.ProducerTemplate;
-import org.apache.camel.component.file.GenericFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ucar.grib.grib2.*;
@@ -19,7 +17,7 @@ import ucar.unidata.io.RandomAccessFile;
  * #%L
  * Camel for GFS data via FTP
  * %%
- * Copyright (C) 2012 Adrian Jarvis
+ * Copyright (C) 2012 - 2014 Adrian Jarvis
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -39,8 +37,9 @@ import ucar.unidata.io.RandomAccessFile;
 public class GribSplitter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GribSplitter.class);
-    private File outputDirectory;
+    private final File outputDirectory;
     @EndpointInject(uri="direct:split")
+    private
     ProducerTemplate producerTemplate;
     
     public GribSplitter(File outputDirectory) {
@@ -51,16 +50,6 @@ public class GribSplitter {
         this.producerTemplate = producerTemplate;
     }
 
-    public void splitMessage(Message message) throws IOException {
-        GenericFile file = message.getBody(GenericFile.class);
-        Object fileObject = file.getFile();
-        if (fileObject instanceof File) {
-            splitFile((File) fileObject);
-        } else {
-            LOGGER.warn("Unable to handle file of type {}", fileObject.getClass());
-        }
-    }
-    
     public void splitFile(File file) throws IOException {
         RandomAccessFile randomAccessFile = null;
         int fileCounter = 0;
@@ -71,7 +60,7 @@ public class GribSplitter {
             grib2Input.scan(false, false);
             List<Grib2Record> records = grib2Input.getRecords();
             for (Grib2Record record : records) {
-                byte[] recordBytes = readRecordAsBytes(record, randomAccessFile);
+                byte[] recordBytes = readRecordAsBytes(new RecordReadDefinition(record, randomAccessFile));
                 String newFileName = file.getName() + "_" + fileCounter;
                 File newFile = new File(outputDirectory, newFileName);
                 writeNewFile(newFile, recordBytes);
@@ -89,14 +78,14 @@ public class GribSplitter {
         LOGGER.info("Split file {} into {} records", file.getName(), fileCounter);
     }
 
-    private byte[] readRecordAsBytes(Grib2Record record, RandomAccessFile randomAccessFile) throws IOException {
-        Grib2IndicatorSection is = record.getIs();
+    private byte[] readRecordAsBytes(RecordReadDefinition recordReadDefinition) throws IOException {
+        Grib2IndicatorSection is = recordReadDefinition.getRecord().getIs();
         long startPosition = is.getStartPos();
         long endPosition = is.getEndPos();
-        randomAccessFile.seek(startPosition);
+        recordReadDefinition.getRandomAccessFile().seek(startPosition);
         final long recordLength = endPosition - startPosition;
-        byte[] recordBytes = randomAccessFile.readBytes((int) recordLength);
-        randomAccessFile.seek(endPosition);
+        byte[] recordBytes = recordReadDefinition.getRandomAccessFile().readBytes((int) recordLength);
+        recordReadDefinition.getRandomAccessFile().seek(endPosition);
         return recordBytes;
     }
 

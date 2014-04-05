@@ -4,7 +4,7 @@ package jarvis.gribdownloadspring;
  * #%L
  * Camel for GFS data via FTP
  * %%
- * Copyright (C) 2012 Adrian Jarvis
+ * Copyright (C) 2012 - 2014 Adrian Jarvis
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -32,14 +32,13 @@ import ucar.grib.grib2.*;
  */
 public class Grib2RecordFacade {
 
-    @SuppressWarnings("deprecation")
-    private final Grib2ProductDefinitionSection productDefinitionSection;
     private final Grib2IndicatorSection indicatorSection;
     private final Grib2Pds pdsVars;
     
 
     public Grib2RecordFacade(Grib2Record record) {
-        productDefinitionSection = record.getPDS();
+        @SuppressWarnings("deprecation")
+        Grib2ProductDefinitionSection productDefinitionSection = record.getPDS();
         indicatorSection = record.getIs();
         pdsVars = productDefinitionSection.getPdsVars();
     }
@@ -57,14 +56,6 @@ public class Grib2RecordFacade {
         return pdsVars.getParameterNumber();
     }
 
-    public int getFirstLevelType() {
-        return pdsVars.getLevelType1();
-    }
-    
-    public double getFirstLevelValue() {
-        return pdsVars.getLevelValue1();
-    }
-    
     public String getFirstLevelName() {
         double levelValue1 = pdsVars.getLevelValue1();
         String levelName = Grib2Tables.codeTable4_5(pdsVars.getLevelType1());
