@@ -25,13 +25,9 @@ package jarvis.gribdownloadspring;
 
 import org.apache.camel.Predicate;
 import org.apache.camel.spring.SpringRouteBuilder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class GfsRouteBuilder  extends SpringRouteBuilder {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(GfsRouteBuilder.class);
-    
     @Override
     public void configure() throws Exception {
         Predicate isWantedParameter = header("Parameter Number").in(0,1,2);
